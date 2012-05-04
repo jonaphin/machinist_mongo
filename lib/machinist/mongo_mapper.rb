@@ -1,82 +1,99 @@
 require "machinist"
-require "machinist/machinable"
-
+require "machinist/blueprints"
 begin
-  require "mongoid"
+  require "mongo_mapper"
+  require "mongo_mapper/embedded_document"
 rescue LoadError
-  puts "Mongoid is not installed (gem install mongoid)"
+  puts "MongoMapper is not installed (gem install mongo_mapper)"
   exit
 end
 
 module Machinist
-  
-  module Mongoid
-    
-    module Machinable
+
+  class Lathe
+    def assign_attribute(key, value)
+      assigned_attributes[key.to_sym] = value
+      if @object.respond_to? "#{key}="
+        @object.send("#{key}=", value)
+      else
+        @object[key] = value
+      end
+    end
+  end
+
+  class MongoMapperAdapter
+    def self.has_association?(object, attribute)
+      object.class.associations[attribute]
+    end
+
+    def self.class_for_association(object, attribute)
+      association = object.class.associations[attribute]
+      association && association.klass
+    end
+
+    def self.assigned_attributes_without_associations(lathe)
+      attributes = {}
+      lathe.assigned_attributes.each_pair do |attribute, value|
+        association = lathe.object.class.associations[attribute]
+        if association && association.belongs_to? && !value.nil?
+          attributes[association.foreign_key.to_sym] = value.id
+        else
+          attributes[attribute] = value
+        end
+      end
+      attributes
+    end
+  end
+
+  module MongoMapperExtensions
+
+    module Document
       extend ActiveSupport::Concern
-      
+        
       module ClassMethods
-        include Machinist::Machinable
-        def blueprint_class
-          Machinist::Mongoid::Blueprint
-        end
-      end
-    end
-    
-    class Blueprint < Machinist::Blueprint
-      
-      def make!(attributes = {})
-        object = make(attributes)
-        object.save!
-        object.reload
-      end
-      
-      def lathe_class #:nodoc:
-        Machinist::Mongoid::Lathe
-      end
-      
-      def outside_transaction
-        yield
-      end
-      
-      def box(object)
-        object.id
-      end
+        include Machinist::Blueprints::ClassMethods
 
-      # Unbox an object from the warehouse.
-      def unbox(id)
-        @klass.find(id)
-      end
-    end
-    
-    class Lathe < Machinist::Lathe
-      def make_one_value(attribute, args) #:nodoc:
-        if block_given?
-          raise_argument_error(attribute) unless args.empty?
-          yield
-        else
-          make_association(attribute, args)
+        def make(*args, &block)
+          lathe = Lathe.run(Machinist::MongoMapperAdapter, self.new, *args)
+          unless Machinist.nerfed?
+            lathe.object.save!
+            lathe.object.reload
+          end
+          lathe.object(&block)
+        end
+
+        def make_unsaved(*args)
+          Machinist.with_save_nerfed{ make(*args) }.tap do |object|
+            yield object if block_given?
+          end
+        end
+
+        def plan(*args)
+          lathe = Lathe.run(Machinist::MongoMapperAdapter, self.new, *args)
+          Machinist::MongoMapperAdapter.assigned_attributes_without_associations(lathe)
         end
       end
-      
-      def make_association(attribute, args) #:nodoc:
-        p attribute
-        p @klass.associations
-        association = @klass.associations[attribute.to_s]
-        p association
-        if association
-          association.klass.make(*args)
-        else
-          raise_argument_error(attribute)
+    end
+
+    module EmbeddedDocument
+      extend ActiveSupport::Concern
+
+      module ClassMethods
+        include Machinist::Blueprints::ClassMethods
+
+        def make(*args, &block)
+          lathe = Lathe.run(Machinist::MongoMapperAdapter, self.new, *args)
+          lathe.object(&block)
         end
       end
     end
   end
 end
 
-module Mongoid #:nodoc:
-  module Document #:nodoc:
-    include Machinist::Mongoid::Machinable
-  end
+module MongoMapper::Document
+  include Machinist::MongoMapperExtensions::Document
 end
 
+module MongoMapper::EmbeddedDocument
+  include Machinist::MongoMapperExtensions::EmbeddedDocument
+end
