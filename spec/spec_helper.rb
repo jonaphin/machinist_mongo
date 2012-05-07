@@ -1,7 +1,6 @@
 $LOAD_PATH.unshift File.dirname(__FILE__) + "/../lib"
 require "rubygems"
 require "rspec"
-#require "sham"
 
 module Spec
   module MongoMapper
@@ -9,7 +8,6 @@ module Spec
       ::MongoMapper.database = "machinist_mongomapper"
   
       ::RSpec.configure do |config|
-        #config.before(:each) { Sham.reset }
         config.after(:all)   { ::MongoMapper.database.collections.each { |c| c.remove } }
       end
     end
