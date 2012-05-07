@@ -49,23 +49,23 @@ describe Machinist, "MongoMapper::Document adapter" do
     Comment.clear_blueprints!
   end
 
-  describe "make method" do
+  describe "make! method" do
     it "should save the constructed object" do
       Person.blueprint { }
-      person = Person.make
-      person.should_not be_new
+      person = Person.make!
+      person.should_not be_new_record
     end
 
     it "should create an object through belongs_to association" do
       Post.blueprint { }
       Comment.blueprint { post }
-      Comment.make.post.class.should == Post
+      Comment.make!.post.class.should == Post
     end
 
     it "should create an object through belongs_to association with a class_name attribute" do
       Person.blueprint { }
       Comment.blueprint { author }
-      Comment.make.author.class.should == Person
+      Comment.make!.author.class.should == Person
     end
 
     it "should create an object through belongs_to association using a named blueprint" do
@@ -74,21 +74,21 @@ describe Machinist, "MongoMapper::Document adapter" do
         title { 'Dummy Post' }
       end
       Comment.blueprint { post(:dummy) }
-      Comment.make.post.title.should == 'Dummy Post'
+      Comment.make!.post.title.should == 'Dummy Post'
     end
   end
 
-  describe "plan method" do
+  describe "make method" do
     it "should not save the constructed object" do
       person_count = Person.count
       Person.blueprint { }
-      person = Person.plan
+      person = Person.make
       Person.count.should == person_count
     end
 
     it "should return a regular attribute in the hash" do
       Post.blueprint { title "Test" }
-      post = Post.plan
+      post = Post.make
       post[:title].should == "Test"
     end
 
@@ -96,7 +96,7 @@ describe Machinist, "MongoMapper::Document adapter" do
       Post.blueprint { }
       Comment.blueprint { post }
       post_count = Post.count
-      comment = Comment.plan
+      comment = Comment.make
       Post.count.should == post_count + 1
       comment[:post].should be_nil
       comment[:post_id].should_not be_nil
@@ -115,30 +115,28 @@ describe Machinist, "MongoMapper::Document adapter" do
         post.foo.should == "bar"
       end
     end
-  end
 
-  describe "make_unsaved method" do
     it "should not save the constructed object" do
       Person.blueprint { }
-      person = Person.make_unsaved
-      person.should be_new
+      person = Person.make
+      person.should be_new_record
     end
-    
+
     it "should not save associated objects" do
-      pending
-      # Post.blueprint { }
-      # Comment.blueprint { post }
-      # comment = Comment.make_unsaved
-      # comment.post.should be_new
+      #Post.blueprint { }
+      #Comment.blueprint { post }
+      #comment = Comment.make
+      #comment.should be_new_record
+      #comment.post.should be_new_record
     end
-    
+
     it "should save objects made within a passed-in block" do
-      Post.blueprint { }
-      Comment.blueprint { }
-      comment = nil
-      post = Post.make_unsaved { comment = Comment.make }
-      post.should be_new
-      comment.should_not be_new
+      #Post.blueprint { }
+      #Comment.blueprint { }
+      #comment = nil
+      #post = Post.make { comment = Comment.make! }
+      #post.should be_new_record
+      #comment.should_not be_new_record
     end
   end
 

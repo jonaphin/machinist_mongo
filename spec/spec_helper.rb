@@ -4,16 +4,16 @@ require "rspec"
 #require "sham"
 
 module Spec
-  # module MongoMapper
-  #   def self.configure!
-  #     ::MongoMapper.database = "machinist_mongomapper"
-  # 
-  #     ::Rspec.configure do |config|
-  #       config.before(:each) { Sham.reset }
-  #       config.after(:all)   { ::MongoMapper.database.collections.each { |c| c.remove } }
-  #     end
-  #   end
-  # end
+  module MongoMapper
+    def self.configure!
+      ::MongoMapper.database = "machinist_mongomapper"
+  
+      ::RSpec.configure do |config|
+        #config.before(:each) { Sham.reset }
+        config.after(:all)   { ::MongoMapper.database.collections.each { |c| c.remove } }
+      end
+    end
+  end
 
   module Mongoid
     def self.configure!
@@ -22,7 +22,7 @@ module Spec
         config.allow_dynamic_fields = true
       end
 
-      ::Rspec.configure do |config|
+      ::RSpec.configure do |config|
         config.after(:all)   { ::Mongoid.master.collections.each { |c| c.remove } }
       end
     end

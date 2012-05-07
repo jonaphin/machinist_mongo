@@ -1,5 +1,5 @@
 require "machinist"
-require "machinist/blueprints"
+require "machinist/machinable"
 begin
   require "mongo_mapper"
   require "mongo_mapper/embedded_document"
@@ -10,80 +10,74 @@ end
 
 module Machinist
 
-  class Lathe
-    def assign_attribute(key, value)
-      assigned_attributes[key.to_sym] = value
-      if @object.respond_to? "#{key}="
-        @object.send("#{key}=", value)
-      else
-        @object[key] = value
+  module MongoMapper
+
+    module Machinable
+      extend ActiveSupport::Concern
+
+      module ClassMethods
+        include Machinist::Machinable
+        def blueprint_class
+          Machinist::MongoMapper::Blueprint
+        end
       end
     end
-  end
 
-  class MongoMapperAdapter
-    def self.has_association?(object, attribute)
-      object.class.associations[attribute]
+    class Blueprint < Machinist::Blueprint
+
+      def make!(attributes = {})
+        object = make(attributes)
+        object.save!
+        object.reload
+      end
+
+      def lathe_class #:nodoc:
+        Machinist::MongoMapper::Lathe
+      end
+
+      def outside_transaction
+        yield
+      end
+
+      def box(object)
+        object.id
+      end
+
+      # Unbox an object from the warehouse.
+      def unbox(id)
+        @klass.find(id)
+      end
     end
 
-    def self.class_for_association(object, attribute)
-      association = object.class.associations[attribute]
-      association && association.klass
-    end
-
-    def self.assigned_attributes_without_associations(lathe)
-      attributes = {}
-      lathe.assigned_attributes.each_pair do |attribute, value|
-        association = lathe.object.class.associations[attribute]
-        if association && association.belongs_to? && !value.nil?
-          attributes[association.foreign_key.to_sym] = value.id
+    class Lathe < Machinist::Lathe
+      def make_one_value(attribute, args) #:nodoc:
+        if block_given?
+          raise_argument_error(attribute) unless args.empty?
+          yield
         else
-          attributes[attribute] = value
+          make_association(attribute, args)
         end
       end
-      attributes
-    end
-  end
 
-  module MongoMapperExtensions
-
-    module Document
-      extend ActiveSupport::Concern
-        
-      module ClassMethods
-        include Machinist::Blueprints::ClassMethods
-
-        def make(*args, &block)
-          lathe = Lathe.run(Machinist::MongoMapperAdapter, self.new, *args)
-          unless Machinist.nerfed?
-            lathe.object.save!
-            lathe.object.reload
+      def make_association(attribute, args) #:nodoc:
+        association = @klass.associations[attribute.to_sym]
+        if association
+          association.klass.make(*args)
+        else
+          if args.nil? || args.length > 1
+            raise_argument_error(attribute)
+          else
+            assign_attribute(attribute, args[0])
           end
-          lathe.object(&block)
-        end
-
-        def make_unsaved(*args)
-          Machinist.with_save_nerfed{ make(*args) }.tap do |object|
-            yield object if block_given?
-          end
-        end
-
-        def plan(*args)
-          lathe = Lathe.run(Machinist::MongoMapperAdapter, self.new, *args)
-          Machinist::MongoMapperAdapter.assigned_attributes_without_associations(lathe)
         end
       end
-    end
 
-    module EmbeddedDocument
-      extend ActiveSupport::Concern
-
-      module ClassMethods
-        include Machinist::Blueprints::ClassMethods
-
-        def make(*args, &block)
-          lathe = Lathe.run(Machinist::MongoMapperAdapter, self.new, *args)
-          lathe.object(&block)
+      def assign_attribute(key, value)
+        @assigned_attributes[key.to_sym] = value
+        if @object.respond_to?("#{key}=")
+          @object.send("#{key}=", value)
+        else
+          @object[key] = value
         end
       end
     end
@@ -91,9 +85,9 @@ module Machinist
 end
 
 module MongoMapper::Document
-  include Machinist::MongoMapperExtensions::Document
+  include Machinist::MongoMapper::Machinable
 end
 
 module MongoMapper::EmbeddedDocument
-  include Machinist::MongoMapperExtensions::EmbeddedDocument
+  include Machinist::MongoMapper::Machinable
 end
