@@ -13,7 +13,7 @@ begin
     gem.authors = ["Nicolas Merouze", "Cyril Mougel"]
     gem.files = Dir["README.md", "LICENSE", "lib/**/*"]
 
-    gem.add_dependency('machinist',  '~> 2.0.0.beta2')
+    gem.add_dependency('machinist',  '>= 2.0.0')
   end
   
   Jeweler::GemcutterTasks.new

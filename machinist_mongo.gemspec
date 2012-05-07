@@ -12,9 +12,11 @@ Gem::Specification.new do |s|
   s.date = "2012-05-07"
   s.email = "nicolas.merouze@gmail.com"
   s.extra_rdoc_files = [
+    "LICENSE",
     "README.textile"
   ]
   s.files = [
+    "LICENSE",
     "lib/machinist/mongo_mapper.rb",
     "lib/machinist/mongoid.rb"
   ]
@@ -33,7 +35,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<machinist>, [">= 2.0.0"])
       s.add_runtime_dependency(%q<rspec>, [">= 0"])
       s.add_runtime_dependency(%q<rake>, [">= 0"])
-      s.add_runtime_dependency(%q<machinist>, ["~> 2.0.0.beta2"])
+      s.add_runtime_dependency(%q<machinist>, [">= 2.0.0"])
     else
       s.add_dependency(%q<mongo>, [">= 1.6.2"])
       s.add_dependency(%q<mongo_mapper>, [">= 0.11.1"])
@@ -41,7 +43,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<machinist>, [">= 2.0.0"])
       s.add_dependency(%q<rspec>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
-      s.add_dependency(%q<machinist>, ["~> 2.0.0.beta2"])
+      s.add_dependency(%q<machinist>, [">= 2.0.0"])
     end
   else
     s.add_dependency(%q<mongo>, [">= 1.6.2"])
@@ -50,7 +52,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<machinist>, [">= 2.0.0"])
     s.add_dependency(%q<rspec>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
-    s.add_dependency(%q<machinist>, ["~> 2.0.0.beta2"])
+    s.add_dependency(%q<machinist>, [">= 2.0.0"])
   end
 end
 
