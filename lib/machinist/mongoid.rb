@@ -77,7 +77,7 @@ module Machinist
         if @object.respond_to?("#{key}=")
           @object.send("#{key}=", value)
         else
-          @object.process(key => value)
+          @object.write_attribute(key, value)
         end
       end
     end

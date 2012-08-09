@@ -15,9 +15,15 @@ module Spec
 
   module Mongoid
     def self.configure!
+      require 'moped' if ::Mongoid::VERSION >= '3.0.0'          
+
       ::Mongoid.configure do |config|
-        config.master = Mongo::Connection.new.db("machinist_mongoid")
-        config.allow_dynamic_fields = true
+        if defined?(Moped)
+          config.connect_to "machinist_mongoid"
+        else
+          config.master = Mongo::Connection.new.db "machinist_mongoid"
+          config.allow_dynamic_fields = true
+        end
       end
 
       ::RSpec.configure do |config|

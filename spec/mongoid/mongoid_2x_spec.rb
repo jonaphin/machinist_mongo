@@ -15,7 +15,7 @@ end
 class Person
   include Mongoid::Document
 
-  field :name, :accessible => false
+  field :name #, :accessible => false
   field :password
   field :admin, :type => Boolean, :default => false
 
