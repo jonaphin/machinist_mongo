@@ -6,7 +6,7 @@ h2. Usage
 
 Using Machinist MongoMapper. Put this in your @Gemfile@:
 
-bc. gem 'machinist_mongo'  :git => "git://github.com/polar/machinist_mongo.git"
+bc. gem 'machinist_mongo'  :git => "git://github.com/jonaphin/machinist_mongo.git"
 
 And run:
 
@@ -14,7 +14,7 @@ bc. bundle install
 
 Or — if you’re using Rails 2.x — put this in @config/environment.rb@:
 
-bc. config.gem 'machinist_mongo', :git => "git://github.com/polar/machinist_mongo.git"
+bc. config.gem 'machinist_mongo', :git => "git://github.com/jonaphin/machinist_mongo.git"
 
 And run:
 
