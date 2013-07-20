@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<mongo>, [">= 1.6.2"])
+      s.add_runtime_dependency(%q<mongo>, [">= 1.3.0"])
       s.add_runtime_dependency(%q<mongo_mapper>, [">= 0.11.1"])
       s.add_runtime_dependency(%q<mongoid>, [">= 2.0.0"])
       s.add_runtime_dependency(%q<machinist>, [">= 2.0.0"])
@@ -37,7 +37,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<rake>, [">= 0"])
       s.add_runtime_dependency(%q<machinist>, [">= 2.0.0"])
     else
-      s.add_dependency(%q<mongo>, [">= 1.6.2"])
+      s.add_dependency(%q<mongo>, [">= 1.3.0"])
       s.add_dependency(%q<mongo_mapper>, [">= 0.11.1"])
       s.add_dependency(%q<mongoid>, [">= 2.0.0"])
       s.add_dependency(%q<machinist>, [">= 2.0.0"])
@@ -46,7 +46,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<machinist>, [">= 2.0.0"])
     end
   else
-    s.add_dependency(%q<mongo>, [">= 1.6.2"])
+    s.add_dependency(%q<mongo>, [">= 1.3.0"])
     s.add_dependency(%q<mongo_mapper>, [">= 0.11.1"])
     s.add_dependency(%q<mongoid>, [">= 2.0.0"])
     s.add_dependency(%q<machinist>, [">= 2.0.0"])
